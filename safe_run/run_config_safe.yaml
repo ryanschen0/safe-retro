@@ -1,0 +1,30 @@
+
+## OpenNMT-py config for SAFE Molecular Transformer
+
+# Output paths
+save_data: safe_run/data
+src_vocab: safe_run/safe.vocab.src
+tgt_vocab: safe_run/safe.vocab.src
+overwrite: true
+share_vocab: true
+
+# Training & validation data
+data:
+    corpus-1:
+        path_src: USPTO_SAFE_preprocessed/src-train.txt
+        path_tgt: USPTO_SAFE_preprocessed/tgt-train.txt
+    valid:
+        path_src: USPTO_SAFE_preprocessed/src-val.txt
+        path_tgt: USPTO_SAFE_preprocessed/tgt-val.txt
+
+# Training schedule
+world_size: 1
+gpu_ranks: [0]
+save_model: safe_run/model
+save_checkpoint_steps: 5000
+keep_checkpoint: 5
+train_steps: 400000
+valid_steps: 10000
+report_every: 100
+tensorboard: true
+tensorboard_log_dir: safe_log_dir
