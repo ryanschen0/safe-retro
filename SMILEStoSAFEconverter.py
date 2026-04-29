@@ -11,7 +11,7 @@ from tqdm import tqdm
 RDLogger.DisableLog("rdApp.*")
 
 REACTANT_SEP = "~"
-SMILES_COL = "reactants>reagents>production"
+SMILES_COL = "rxn_smiles"
 
 
 # Utilities
@@ -230,5 +230,6 @@ if __name__ == "__main__":
         val_path="Data/val.csv",
         test_path="Data/test.csv",
     )
+    df["rxn_smiles"] = df["precursors"] + ">>" + df["products"]
     print("\nColumn names:", df.columns.tolist())
-    results = validate_dataset(df)
+    results = validate_dataset_parallel(df)
