@@ -5,10 +5,10 @@ Single-threaded, streaming — no multiprocessing, no RAM buildup.
 """
 
 import argparse
+import gc
 import random
 import re
 import sys
-from itertools import permutations
 from pathlib import Path
 
 from rdkit import Chem
@@ -52,25 +52,24 @@ def permute_safe_fragments(safe_str, max_perms=4, rng=None):
         return []
 
     fragments = safe_str.split('.')
-    if len(fragments) <= 1:
+    n = len(fragments)
+    if n <= 1:
         return []
 
-    all_perms = list(permutations(range(len(fragments))))
-    identity = tuple(range(len(fragments)))
-    all_perms = [p for p in all_perms if p != identity]
-    if not all_perms:
-        return []
-
-    if len(all_perms) > max_perms * 10:
-        rng.shuffle(all_perms)
-        all_perms = all_perms[:max_perms * 10]
-
+    identity = list(range(n))
     results = []
     seen_strings = {safe_str}
-    for perm in all_perms:
-        if len(results) >= max_perms:
-            break
+    attempts = 0
+    max_attempts = max_perms * 20
+
+    while len(results) < max_perms and attempts < max_attempts:
+        perm = identity[:]
+        rng.shuffle(perm)
+        if perm == identity:
+            attempts += 1
+            continue
         candidate = _renumber_ring_digits('.'.join(fragments[i] for i in perm))
+        attempts += 1
         if candidate in seen_strings:
             continue
         try:
@@ -159,6 +158,7 @@ def main():
             if i % 5000 == 0:
                 print(f"  {i} processed, {total_augmented} augmented so far")
                 sys.stdout.flush()
+                gc.collect()  # Force garbage collection every 5k reactions
 
     print(f"\n=== Augmentation Report ===")
     print(f"Total input   : {i}")
